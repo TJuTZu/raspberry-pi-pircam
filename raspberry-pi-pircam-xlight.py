@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------------------------
 #
-# raspberry-pi-pircam.py ver 1.0
+# raspberry-pi-pircam-xlight.py ver 1.0
 #
 # Raspberry Pi motion detection IR Camera with IR Led
 # by TJuTZu
