@@ -36,3 +36,17 @@ GPIO usage
 # PIR IN (7) = GPIO 4
 # PIR OUT (12) = GPIO 18
 # -------------------------------------------------------------------------------------------------
+
+
+Changes:
+--------
+
+1.0 Original version
+1.1 Removed incomplete still images part from the code and changed default output folder under www
+1.2 Added logging
+    - all prints replaced by logging
+    - PrintDebug(): revoved
+    - DateText(): function added to be used for date string creation
+    - Function GPIO_04_Rise(camera, filename): renamed to StartVideoRecording(camera, filename):
+    - Function GPIO_04_Fall(camera): renamed to StopVideoRecording(camera):
+    - Calling rm replased with os.remove in convert_to_mp4()
