@@ -1,8 +1,8 @@
 # -------------------------------------------------------------------------------------------------
 #
-# raspberry-pi-pircam-xlight.py ver 1.0
+# raspberry-pi-pircam.py ver 1.2
 #
-# Raspberry Pi motion detection IR Camera with IR Led
+# Raspberry Pi motion detection IR Camera with extra IR Led
 # by TJuTZu
 #
 # Thanks to (I really can't name all) the people whose code I have used as a base
@@ -25,6 +25,9 @@ from subprocess import call
 
 # Raspberry Pi camera 
 import picamera
+
+# for debug
+import logging
 
 # -------------------------------------------------------------------------------------------------
 #For GPIO
@@ -64,12 +67,12 @@ GPIO.output(24, False)
 debug = True # True / False
 
 # File
-filepath = "/home/pi/cam"
+# filepath = "/home/pi/cam"
+filepath = "/var/www/cam"
 filenamePrefix = "PIR"
 diskSpaceToReserve = 1024 * 1024 * 1024 # Keep 1024 mb free on disk
 
 # Capture
-CapturingMode = "Video" # Still, Video
 RecordingOn   = False
 bLedOn = False # True / False  
 
@@ -88,7 +91,7 @@ RPiExposure = "auto" # auto,night,nightpreview,backlight,spotlight,sports,snow,b
 def getFreeSpace():
     st = os.statvfs(".")
     du = st.f_bavail * st.f_frsize
-    #if debug == True: print("Free space %s" % du)
+    #if debug == True: logging.debug("Free space %s" % du)
     return du
 
 # Keep free space above given level
@@ -97,23 +100,22 @@ def keepDiskSpaceFree(bytesToReserve):
         for filename in sorted(os.listdir(filepath + "/")):
             if filename.startswith(filenamePrefix):
                 os.remove(filepath + "/" + filename)
-                print "Deleted %s/%s to avoid filling disk" % (filepath,filename)
+                logging.debug ("Deleted %s/%s to avoid filling disk" % (filepath,filename))
                 if (getFreeSpace() > bytesToReserve):
                     return
                     
 # -------------------------------------------------------------------------------------------------
-# Action to take when mevement is detected by PIR
-# I have connected PIR into GPIO channel 4
+# Generate date text
 # -------------------------------------------------------------------------------------------------
-def PrintDebug():
+def DateText():
     dt = datetime.now()
-    YoTime = "%04d.%02d.%02d %02d:%02d:%02d:%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond) 
-    print (YoTime)
+    text = "%04d.%02d.%02d %02d:%02d:%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second) 
+    return text 
 
-	# -------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # IR Light on/off
 # -------------------------------------------------------------------------------------------------
-def IRLight(onoff)
+def IRLight(onoff):
 	# Addon IR LED
 	GPIO.output(18, onoff)
 	# External IR light
@@ -123,59 +125,35 @@ def IRLight(onoff)
 # Action to take when movement is detected by PIR
 # I have connected PIR into GPIO channel 4
 # -------------------------------------------------------------------------------------------------
-def GPIO_04_Rise(camera, filename):
+def StartVideoRecording(camera, filename):
         
-    print ("Movement detected!")
-    
-    if debug == True: PrintDebug()
+    logging.debug ("Movement detected!")
     
     # Turn IR Led on
-	IRLight(True)
+    IRLight(True)
 
     if bLedOn: camera.led = True
 
-    if CapturingMode == "Still":
-             
-        # Set file extension
-        filename = filename + ".jpg"
-       
-        # Take picture
+    # Set file extension
+    filename = filename + ".h264"
+    #logging.debug("before")
+    camera.start_recording(filename, format='h264')
+    #logging.debug("after")
 
-        if debug == True: PrintDebug()
-            
-        # Give the camera some time to adjust to conditions
-        # time.sleep(0.1)
-        camera.capture(filename)
-      
-        IRLight(False)
-
-        print ("Picture taken %s" % filename)
+    logging.debug ("Video start %s" % filename)
        
-    if CapturingMode == "Video":
-        # Set file extension
-        filename = filename + ".h264"
-        #print("before")
-        camera.start_recording(filename, format='h264')
-        #print("after")
-
-        if debug == True: PrintDebug()
-            
-        print ("Video start %s" % filename)
-       
-    if debug == True: PrintDebug()
     if bLedOn: camera.led = False
 
      
 # -------------------------------------------------------------------------------------------------
-# Action to take when mevement has stopped
+# Action to take when movement has stopped
 # -------------------------------------------------------------------------------------------------
 
-def GPIO_04_Fall(camera):
+def StopVideoRecording(camera):
     camera.stop_recording()
-    print ("Video stop")
-	IRLight(False)
+    logging.debug ("Video stop")
+    IRLight(False)
     if bLedOn: camera.led = False
-    if debug == True: PrintDebug()
 
 # -------------------------------------------------------------------------------------------------
 # convert h264 stream to mp4 and remove not needed files
@@ -184,12 +162,12 @@ def GPIO_04_Fall(camera):
 def conver_to_mp4(filename):
     
     command_ro_run = "MP4Box -add " + filename + ".h264 " +  filename + ".mp4"
-    if debug == True: print (command_ro_run)
+    if debug == True: logging.debug (command_ro_run)
     subprocess.call(command_ro_run, shell=True)
     
-    command_ro_run = "rm " + filename + ".h264 "
-    if debug == True: print (command_ro_run)
-    subprocess.call(command_ro_run, shell=True)
+    command_ro_run = "remove: " + filename + ".h264 "
+    if debug == True: logging.debug (command_ro_run)
+    os.remove(filename + ".h264")
    
 # -------------------------------------------------------------------------------------------------
 # Main loop
@@ -197,6 +175,11 @@ def conver_to_mp4(filename):
 
 with picamera.PiCamera() as camera:
 
+    # for debug
+    logfile = filepath + "/cam-" + DateText() + ".log"
+    logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', filename=logfile,level=logging.DEBUG)
+    logging.debug ("Logs to: %s" % logfile)
+    
     camera.led = False
     #camera.resolution = (1920, 1080)
     #camera.resolution = (1280, 720)
@@ -207,7 +190,7 @@ with picamera.PiCamera() as camera:
     camera.exif_tags['IFD0.Copyright'] = 'Copyright (c) 2014 PAJAT'
     camera.exif_tags['EXIF.UserComment'] = 'Raspberry Pi - PRICam.py Motion detection'
     
-    print ("Capturing mode %s" % CapturingMode)
+    logging.debug ("Capturing mode video")
      
     try:
         while True:
@@ -216,26 +199,23 @@ with picamera.PiCamera() as camera:
             if GPIO.input(4):
                 # Check that enough free space is available 
                 keepDiskSpaceFree(diskSpaceToReserve)
-                # Still mode
-                if CapturingMode == "Still":    
-                    GPIO_04_Rise(camera, filename)
-                # video mode
+                # Not recording yet
+                if RecordingOn == False:    
+                    # Set filename 
+                    dt = datetime.now()
+                    filename = filepath + "/" + filenamePrefix + "-%04d%02d%02d-%02d%02d%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+                    # star recording
+                    StartVideoRecording(camera, filename)
+                    # set recording on
+                    RecordingOn = True
                 else:
-                    # Not recording yet
-                    if RecordingOn == False:    
-                        # Set filename 
-                        dt = datetime.now()
-                        filename = filepath + "/" + filenamePrefix + "-%04d%02d%02d-%02d%02d%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
-                        # star recording
-                        GPIO_04_Rise(camera, filename)
-                        # set recording on
-                        RecordingOn = True
-                    # movement stopped
+                     camera.wait_recording(0)
+            # movement stopped
             else:
                 # was recording
                 if RecordingOn == True:
                     # stop recording
-                    GPIO_04_Fall(camera)
+                    StopVideoRecording(camera)
                     # set recording off
                     RecordingOn = False
                     # convert h264 to mp4
@@ -243,5 +223,5 @@ with picamera.PiCamera() as camera:
 
     # Cleanup if stopped by using Ctrl-C
     except KeyboardInterrupt:
-        print("Cleanup")
+        logging.debug("Cleanup")
         GPIO.cleanup()
