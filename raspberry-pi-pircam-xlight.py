@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------------------------
 #
-# raspberry-pi-pircam.py ver 1.2
+# raspberry-pi-pircam.py ver 1.3
 #
 # Raspberry Pi motion detection IR Camera with extra IR Led
 # by TJuTZu
@@ -109,7 +109,8 @@ def keepDiskSpaceFree(bytesToReserve):
 # -------------------------------------------------------------------------------------------------
 def DateText():
     dt = datetime.now()
-    text = "%04d.%02d.%02d %02d:%02d:%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second) 
+    #text = "%04d.%02d.%02d %02d:%02d:%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second) 
+    text = "-%04d%02d%02d-%02d%02d%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second) 
     return text 
 
 # -------------------------------------------------------------------------------------------------
@@ -176,7 +177,7 @@ def conver_to_mp4(filename):
 with picamera.PiCamera() as camera:
 
     # for debug
-    logfile = filepath + "/cam-" + DateText() + ".log"
+    logfile = filepath + "/PIR" + DateText() + ".log"
     logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', filename=logfile,level=logging.DEBUG)
     logging.debug ("Logs to: %s" % logfile)
     
@@ -209,7 +210,8 @@ with picamera.PiCamera() as camera:
                     # set recording on
                     RecordingOn = True
                 else:
-                     camera.wait_recording(0)
+                     camera.wait_recording(1)
+                     logging.debug ("Recording")
             # movement stopped
             else:
                 # was recording
