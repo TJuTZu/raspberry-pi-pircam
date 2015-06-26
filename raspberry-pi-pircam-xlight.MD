@@ -28,13 +28,17 @@ GPIO usage
 #         13 14 IRLED GND
 #         15 16
 #         17 18 IRLIGHT OUT
-#         19 20 IRLIGHT OUT
+#         19 20 IRLIGHT GND
 #         21 22
 #         23 24 
 #         25 26 
 #
-# PIR IN (7) = GPIO 4
-# PIR OUT (12) = GPIO 18
+# PIR IN (7)  = GPIO 4
+# IR OUT (12) = GPIO 18
+# IR OUT (18) = GPIO 24
+#
+# Pinouts:
+# http://raspi.tv/wp-content/uploads/2014/07/Raspberry-Pi-GPIO-pinouts.png
 # -------------------------------------------------------------------------------------------------
 
 
@@ -50,3 +54,10 @@ Changes:
     - Function GPIO_04_Rise(camera, filename): renamed to StartVideoRecording(camera, filename):
     - Function GPIO_04_Fall(camera): renamed to StopVideoRecording(camera):
     - Calling rm replased with os.remove in convert_to_mp4()
+1.3 Changed logging since recording sometimes hangs and I try to figura what is wrong with the code
+    - Changed date time used in filenames so that it doesn't contain separators
+    - Changed log file name
+    - Added 1 sec wait so that every recording is at least 1 second long
+1.4 Added little more logging
+    - Added logging to find out why recording sometimes hangs
+    - Corrected couple headings
