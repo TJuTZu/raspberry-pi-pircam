@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------------------------
 #
-# raspberry-pi-pircam.py ver 1.3
+# raspberry-pi-pircam.py ver 1.4
 #
 # Raspberry Pi motion detection IR Camera with extra IR Led
 # by TJuTZu
@@ -42,13 +42,17 @@ import RPi.GPIO as GPIO
 #         13 14 IRLED GND
 #         15 16
 #         17 18 IRLIGHT OUT
-#         19 20 IRLIGHT OUT
+#         19 20 IRLIGHT GND
 #         21 22
 #         23 24 
 #         25 26 
 #
-# PIR IN (7) = GPIO 4
-# PIR OUT (12) = GPIO 18
+# PIR IN (7)  = GPIO 4
+# IR OUT (12) = GPIO 18
+# IR OUT (18) = GPIO 24
+#
+# Pinouts:
+# http://raspi.tv/wp-content/uploads/2014/07/Raspberry-Pi-GPIO-pinouts.png
 # -------------------------------------------------------------------------------------------------
 # Initialize GPIO
 GPIO.setmode(GPIO.BCM)
@@ -117,18 +121,18 @@ def DateText():
 # IR Light on/off
 # -------------------------------------------------------------------------------------------------
 def IRLight(onoff):
-	# Addon IR LED
-	GPIO.output(18, onoff)
-	# External IR light
-	GPIO.output(24, onoff)
+    # Addon IR LED
+    GPIO.output(18, onoff)
+    # External IR light
+    GPIO.output(24, onoff)
 
 # -------------------------------------------------------------------------------------------------
-# Action to take when movement is detected by PIR
-# I have connected PIR into GPIO channel 4
+# Turn extra IR on
+# Start video recording
 # -------------------------------------------------------------------------------------------------
 def StartVideoRecording(camera, filename):
         
-    logging.debug ("Movement detected!")
+    logging.debug ("StartVideoRecording")
     
     # Turn IR Led on
     IRLight(True)
@@ -137,28 +141,28 @@ def StartVideoRecording(camera, filename):
 
     # Set file extension
     filename = filename + ".h264"
-    #logging.debug("before")
-    camera.start_recording(filename, format='h264')
-    #logging.debug("after")
 
-    logging.debug ("Video start %s" % filename)
+    logging.debug ("Start recording %s" % filename)
+    camera.start_recording(filename, format='h264')
+    logging.debug ("Started recording")
        
     if bLedOn: camera.led = False
 
      
 # -------------------------------------------------------------------------------------------------
-# Action to take when movement has stopped
+# Stop video recording
+# Turn extra IR off
 # -------------------------------------------------------------------------------------------------
 
 def StopVideoRecording(camera):
+    logging.debug ("StopVideoRecording")
     camera.stop_recording()
-    logging.debug ("Video stop")
     IRLight(False)
     if bLedOn: camera.led = False
 
 # -------------------------------------------------------------------------------------------------
 # convert h264 stream to mp4 and remove not needed files
-# MP3Box is used
+# HOX!! MP3Box need to available!
 # -------------------------------------------------------------------------------------------------
 def conver_to_mp4(filename):
     
@@ -198,10 +202,12 @@ with picamera.PiCamera() as camera:
             #camera.wait_recording(1)
             time.sleep(0.01)
             if GPIO.input(4):
+                logging.debug ("Movement detected!")
                 # Check that enough free space is available 
                 keepDiskSpaceFree(diskSpaceToReserve)
                 # Not recording yet
                 if RecordingOn == False:    
+                    logging.debug ("Not Recording")
                     # Set filename 
                     dt = datetime.now()
                     filename = filepath + "/" + filenamePrefix + "-%04d%02d%02d-%02d%02d%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
@@ -210,17 +216,20 @@ with picamera.PiCamera() as camera:
                     # set recording on
                     RecordingOn = True
                 else:
-                     camera.wait_recording(1)
-                     logging.debug ("Recording")
+                    logging.debug ("Recording")
+                    camera.wait_recording(1)
             # movement stopped
             else:
                 # was recording
                 if RecordingOn == True:
+                    logging.debug ("Movement stopped while recording")
                     # stop recording
+                    logging.debug ("Call: StopVideoRecording")
                     StopVideoRecording(camera)
                     # set recording off
                     RecordingOn = False
                     # convert h264 to mp4
+                    logging.debug ("Call: conver_to_mp4")
                     conver_to_mp4(filename)
 
     # Cleanup if stopped by using Ctrl-C
