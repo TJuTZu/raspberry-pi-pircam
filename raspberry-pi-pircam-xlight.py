@@ -196,6 +196,7 @@ with picamera.PiCamera() as camera:
     camera.exposure_mode = 'auto' # auto sports
     camera.meter_mode = 'matrix'
     camera.hflip = True # camera is upside down
+    camera.vflip = True # camera is upside down
     camera.image_effect = 'none'
     camera.exif_tags['IFD0.Copyright'] = 'Copyright (c) 2014 PAJAT'
     camera.exif_tags['EXIF.UserComment'] = 'Raspberry Pi - PRICam.py Motion detection'
