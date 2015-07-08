@@ -1,11 +1,13 @@
 # -------------------------------------------------------------------------------------------------
 #
-# raspberry-pi-pircam.py ver 1.4
+# raspberry-pi-pircam.py ver 1.5
 #
 # Raspberry Pi motion detection IR Camera with extra IR Led
 # by TJuTZu
 #
 # Thanks to (I really can't name all) the people whose code I have used as a base
+#
+# picamera documentation can be found http://picamera.readthedocs.org/
 #
 # MP4Box is used for video conversion to install
 #  sudo apt-get update
@@ -78,7 +80,9 @@ diskSpaceToReserve = 1024 * 1024 * 1024 # Keep 1024 mb free on disk
 
 # Capture
 RecordingOn   = False
-bLedOn = False # True / False  
+bLedOn        = False # True / False  
+bIrLed        = False # True / False  
+bIrLight      = True  # True / False  
 
 # Still Values
 # 
@@ -122,9 +126,9 @@ def DateText():
 # -------------------------------------------------------------------------------------------------
 def IRLight(onoff):
     # Addon IR LED
-    GPIO.output(18, onoff)
+    if bIrLed: GPIO.output(18, onoff)
     # External IR light
-    GPIO.output(24, onoff)
+    if bIrLight: GPIO.output(24, onoff)
 
 # -------------------------------------------------------------------------------------------------
 # Turn extra IR on
@@ -191,6 +195,7 @@ with picamera.PiCamera() as camera:
     camera.exposure_compensation = 2
     camera.exposure_mode = 'auto' # auto sports
     camera.meter_mode = 'matrix'
+    camera.hflip = True # camera is upside down
     camera.image_effect = 'none'
     camera.exif_tags['IFD0.Copyright'] = 'Copyright (c) 2014 PAJAT'
     camera.exif_tags['EXIF.UserComment'] = 'Raspberry Pi - PRICam.py Motion detection'
