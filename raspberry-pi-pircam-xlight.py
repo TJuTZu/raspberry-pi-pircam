@@ -14,6 +14,11 @@
 #  sudo apt-get install gpac
 #
 # -------------------------------------------------------------------------------------------------
+# 1.5.1 20.7.2015
+# added: camera.annotate_text = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+#
+#
+# -------------------------------------------------------------------------------------------------
 
 
 # Time handling
@@ -222,7 +227,10 @@ with picamera.PiCamera() as camera:
                     # set recording on
                     RecordingOn = True
                 else:
-                    logging.debug ("Recording")
+                    dt = datetime.now()
+                    annotate_text = "%04d.%02d.%02d %02d:%02d:%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+                    camera.annotate_text = annotate_text  
+                    logging.debug ("Recording: %s" % annotate_text)
                     camera.wait_recording(1)
             # movement stopped
             else:
