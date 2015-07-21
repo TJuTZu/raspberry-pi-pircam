@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------------------------
 #
-# raspberry-pi-pircam.py ver 1.5
+# raspberry-pi-pircam.py ver 1.5.2
 #
 # Raspberry Pi motion detection IR Camera with extra IR Led
 # by TJuTZu
@@ -16,6 +16,9 @@
 # -------------------------------------------------------------------------------------------------
 # 1.5.1 20.7.2015
 # added: camera.annotate_text = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+#
+# 1.5.2 21.7.2015
+# changed: Corrected version number
 #
 #
 # -------------------------------------------------------------------------------------------------
