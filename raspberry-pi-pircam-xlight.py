@@ -81,8 +81,8 @@ GPIO.output(24, False)
 debug = True # True / False
 
 # File
-# filepath = "/home/pi/cam"
-filepath = "/var/www/cam"
+# filepath = "./cam"
+filepath = "/var/www"
 filenamePrefix = "PIR"
 diskSpaceToReserve = 1024 * 1024 * 1024 # Keep 1024 mb free on disk
 
@@ -210,11 +210,16 @@ with picamera.PiCamera() as camera:
     camera.exif_tags['EXIF.UserComment'] = 'Raspberry Pi - PRICam.py Motion detection'
     
     logging.debug ("Capturing mode video")
+    
+    lastpicturetaken = datetime.now() 
      
     try:
         while True:
-            #camera.wait_recording(1)
-            time.sleep(0.01)
+            # Wait 1/10th of second
+            time.sleep(0.1)
+            # Get time
+            dt = datetime.now()
+            # Check if movement is detected
             if GPIO.input(4):
                 logging.debug ("Movement detected!")
                 # Check that enough free space is available 
@@ -223,14 +228,12 @@ with picamera.PiCamera() as camera:
                 if RecordingOn == False:    
                     logging.debug ("Not Recording")
                     # Set filename 
-                    dt = datetime.now()
                     filename = filepath + "/" + filenamePrefix + "-%04d%02d%02d-%02d%02d%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
                     # star recording
                     StartVideoRecording(camera, filename)
                     # set recording on
                     RecordingOn = True
                 else:
-                    dt = datetime.now()
                     annotate_text = "%04d.%02d.%02d %02d:%02d:%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
                     camera.annotate_text = annotate_text  
                     logging.debug ("Recording: %s" % annotate_text)
@@ -248,6 +251,13 @@ with picamera.PiCamera() as camera:
                     # convert h264 to mp4
                     logging.debug ("Call: conver_to_mp4")
                     conver_to_mp4(filename)
+                else:
+                    if (dt.minute % 10) == 0 and dt.second == 0:
+                        annotate_text = "%04d.%02d.%02d %02d:%02d:%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+                        filename = filepath + "/" + filenamePrefix + "-%04d%02d%02d-%02d%02d%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second) + ".jpg"
+                        logging.debug ("Capture %s" % filename)
+                        camera.capture(filename)
+                        time.sleep(1)
 
     # Cleanup if stopped by using Ctrl-C
     except KeyboardInterrupt:
