@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------------------------
 #
-# raspberry-pi-pircam.py ver 1.5.2
+# raspberry-pi-pircam.py ver 1.6
 #
 # Raspberry Pi motion detection IR Camera with extra IR Led
 # by TJuTZu
@@ -20,6 +20,8 @@
 # 1.5.2 21.7.2015
 # changed: Corrected version number
 #
+# 1.6 21.7.2015
+# Added functionali to take picture every 10 minurs
 #
 # -------------------------------------------------------------------------------------------------
 
@@ -252,6 +254,7 @@ with picamera.PiCamera() as camera:
                     logging.debug ("Call: conver_to_mp4")
                     conver_to_mp4(filename)
                 else:
+                    # take picture every 10 minutes (when minutes are devided to 10)
                     if (dt.minute % 10) == 0 and dt.second == 0:
                         annotate_text = "%04d.%02d.%02d %02d:%02d:%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
                         filename = filepath + "/" + filenamePrefix + "-%04d%02d%02d-%02d%02d%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second) + ".jpg"
