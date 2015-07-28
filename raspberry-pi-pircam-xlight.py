@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------------------------
 #
-# raspberry-pi-pircam.py ver 1.6
+# raspberry-pi-pircam.py ver 1.6.1
 #
 # Raspberry Pi motion detection IR Camera with extra IR Led
 # by TJuTZu
@@ -22,6 +22,10 @@
 #
 # 1.6 21.7.2015
 # Added functionali to take picture every 10 minurs
+# 
+# Ver. 1.6.1
+# camera.annotate_text was missing from picture taking
+# Added IR Light also for picture
 #
 # -------------------------------------------------------------------------------------------------
 
@@ -256,10 +260,17 @@ with picamera.PiCamera() as camera:
                 else:
                     # take picture every 10 minutes (when minutes are devided to 10)
                     if (dt.minute % 10) == 0 and dt.second == 0:
+                        # Set annotate text
                         annotate_text = "%04d.%02d.%02d %02d:%02d:%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+                        camera.annotate_text = annotate_text
                         filename = filepath + "/" + filenamePrefix + "-%04d%02d%02d-%02d%02d%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second) + ".jpg"
                         logging.debug ("Capture %s" % filename)
+                        # IR Ligth on
+                        IRLight(True)
+                        # take picture
                         camera.capture(filename)
+                        # IR Ligth off
+                        IRLight(False)
                         time.sleep(1)
 
     # Cleanup if stopped by using Ctrl-C
