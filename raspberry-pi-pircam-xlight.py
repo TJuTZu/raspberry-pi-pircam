@@ -192,8 +192,8 @@ print os.path.dirname(os.path.realpath(__file__))
 # Read configuration file
 inifile.read(os.path.dirname(os.path.realpath(__file__)) + "/raspberry-pi-pircam-xlight.ini")
 # Debug
-readok = inifile.get_ini("Debug", "readok", False) 
-debug = inifile.get_ini("Debug", "debug", False) 
+readok = "True" == inifile.get_ini("Debug", "readok", False)
+debug = "True" == inifile.get_ini("Debug", "debug", False)
 
 # Filesystem
 filepath = inifile.get_ini("Filesystem", "filepath", "/var/www")
@@ -202,17 +202,17 @@ diskSpaceToReserve = int(inifile.get_ini("Filesystem", "diskSpaceToReserve", 104
 
 # Light
 # True / False - Ir light in use
-bIrLight = inifile.get_ini("Light", "IrLight", False)  
+bIrLight = "True" == inifile.get_ini("Light", "IrLight", False)  
 
 # Camera
 # True / False - Camera led
-bLedOn = inifile.get_ini("Camera", "LedOn", False)
+bLedOn = "True" == inifile.get_ini("Camera", "LedOn", False)
 # auto,night,nightpreview,backlight,spotlight,sports,snow,beach,verylong,fixedfps,antishake,fireworks
 camera_exposure_mode = inifile.get_ini("Camera", "camera_exposure_mode",'auto')
 camera_exposure_compensation = int(inifile.get_ini("Camera", "camera_exposure_compensation", "2"))
 camera_meter_mode = inifile.get_ini("Camera", "camera_meter_mode",'matrix')
-camera_hflip = inifile.get_ini("Camera", "camera_hflip", False) # Flip camera image horisontally
-camera_vflip = inifile.get_ini("Camera", "camera_vflip", False) # Flip camera image vertically
+camera_hflip = "True" == inifile.get_ini("Camera", "camera_hflip", False) # Flip camera image horisontally
+camera_vflip = "True" == inifile.get_ini("Camera", "camera_vflip", False) # Flip camera image vertically
 camera_image_effect = inifile.get_ini("Camera", "camera_image_effect",'none')
 camera_exif_tags_IFD0_Copyright = inifile.get_ini("Camera", "camera_exif_tags_IFD0_Copyright",'Copyright (c) 2015 TJuTZu')
 camera_exif_tags_EXIF_UserComment = inifile.get_ini("Camera", "camera_exif_tags_EXIF_UserComment",'Raspberry Pi - PRICam.py Motion detection')
@@ -231,6 +231,9 @@ logging.debug ("Logs to: %s" % logfile)
 
 logging.debug ("Inifile: " + os.path.dirname(os.path.realpath(__file__)) + "/raspberry-pi-pircam-xlight.ini")
 logging.debug ("readok: %s" % readok)
+logging.debug ("readok: %s" % (readok is "True"))
+logging.debug ("readok: %s" % (readok == "True"))
+logging.debug ("readok: %s" % (readok == True))
 logging.debug ("debug: %s" % debug)
 logging.debug ("filepath: %s" % filepath)
 logging.debug ("filenamePrefix: %s" % filenamePrefix)
