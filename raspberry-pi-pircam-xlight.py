@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------------------------
 #
-# raspberry-pi-pircam.py ver 1.6.1
+# raspberry-pi-pircam.py ver 1.7
 #
 # Raspberry Pi motion detection IR Camera with extra IR Led
 # by TJuTZu
@@ -14,21 +14,10 @@
 #  sudo apt-get install gpac
 #
 # -------------------------------------------------------------------------------------------------
-# 1.5.1 20.7.2015
-# added: camera.annotate_text = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-#
-# 1.5.2 21.7.2015
-# changed: Corrected version number
-#
-# 1.6 21.7.2015
-# Added functionali to take picture every 10 minurs
-# 
-# Ver. 1.6.1
-# camera.annotate_text was missing from picture taking
-# Added IR Light also for picture
-#
+# 1.7
+# - Some reorganizing the code
+# - Configuration moved to ini file
 # -------------------------------------------------------------------------------------------------
-
 
 # Time handling
 import time
@@ -44,6 +33,12 @@ import picamera
 
 # for debug
 import logging
+
+# -------------------------------------------------------------------------------------------------
+# For debugging purposes
+# -------------------------------------------------------------------------------------------------
+#import warnings
+#warnings.filterwarnings('error', category=DeprecationWarning)
 
 # -------------------------------------------------------------------------------------------------
 #For GPIO
@@ -76,32 +71,30 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
 GPIO.setup(4, GPIO.IN)
-GPIO.setup(18, GPIO.OUT)
-GPIO.output(18, False)
+#GPIO.setup(18, GPIO.OUT)
+#GPIO.output(18, False)
 GPIO.setup(24, GPIO.OUT)
 GPIO.output(24, False)
 
 # -------------------------------------------------------------------------------------------------
-## Setup
-# File
-debug = True # True / False
+# inifile handling
+# -------------------------------------------------------------------------------------------------
+from ConfigParser import SafeConfigParser
+inifile = SafeConfigParser()
 
-# File
-# filepath = "./cam"
-filepath = "/var/www"
-filenamePrefix = "PIR"
-diskSpaceToReserve = 1024 * 1024 * 1024 # Keep 1024 mb free on disk
+# -------------------------------------------------------------------------------------------------
+# Read value from inifile
+# -------------------------------------------------------------------------------------------------
+def get_ini(self, section, value, default):
+  if self.has_option(section, value) == False:
+    return default
+  else:
+    return self.get(section, value)
 
-# Capture
-RecordingOn   = False
-bLedOn        = False # True / False  
-bIrLed        = False # True / False  
-bIrLight      = True  # True / False  
-
-# Still Values
-# 
-RPiStillQuality = "70"
-RPiExposure = "auto" # auto,night,nightpreview,backlight,spotlight,sports,snow,beach,verylong,fixedfps,antishake,fireworks
+# -------------------------------------------------------------------------------------------------
+# Add new method to SafeConfigParser 
+# -------------------------------------------------------------------------------------------------
+setattr(SafeConfigParser, 'get_ini', get_ini)
 
 # -------------------------------------------------------------------------------------------------
 # Disk space handling
@@ -139,8 +132,6 @@ def DateText():
 # IR Light on/off
 # -------------------------------------------------------------------------------------------------
 def IRLight(onoff):
-    # Addon IR LED
-    if bIrLed: GPIO.output(18, onoff)
     # External IR light
     if bIrLight: GPIO.output(24, onoff)
 
@@ -148,7 +139,7 @@ def IRLight(onoff):
 # Turn extra IR on
 # Start video recording
 # -------------------------------------------------------------------------------------------------
-def StartVideoRecording(camera, filename):
+def StartVideoRecording(camera, target_filename):
         
     logging.debug ("StartVideoRecording")
     
@@ -158,10 +149,10 @@ def StartVideoRecording(camera, filename):
     if bLedOn: camera.led = True
 
     # Set file extension
-    filename = filename + ".h264"
+    target_filename = target_filename + ".h264"
 
-    logging.debug ("Start recording %s" % filename)
-    camera.start_recording(filename, format='h264')
+    logging.debug ("Start recording %s" % target_filename)
+    camera.start_recording(target_filename, format='h264')
     logging.debug ("Started recording")
        
     if bLedOn: camera.led = False
@@ -182,38 +173,99 @@ def StopVideoRecording(camera):
 # convert h264 stream to mp4 and remove not needed files
 # HOX!! MP3Box need to available!
 # -------------------------------------------------------------------------------------------------
-def conver_to_mp4(filename):
+def conver_to_mp4(target_filename):
     
-    command_ro_run = "MP4Box -add " + filename + ".h264 " +  filename + ".mp4"
+    command_ro_run = "MP4Box -add " + target_filename + ".h264 " +  target_filename + ".mp4"
     if debug == True: logging.debug (command_ro_run)
     subprocess.call(command_ro_run, shell=True)
     
-    command_ro_run = "remove: " + filename + ".h264 "
+    command_ro_run = "remove: " + target_filename + ".h264 "
     if debug == True: logging.debug (command_ro_run)
-    os.remove(filename + ".h264")
+    os.remove(target_filename + ".h264")
    
+# -------------------------------------------------------------------------------------------------
+# Setup
+# -------------------------------------------------------------------------------------------------
+
+print os.path.dirname(os.path.realpath(__file__))
+
+# Read configuration file
+inifile.read(os.path.dirname(os.path.realpath(__file__)) + "/raspberry-pi-pircam-xlight.ini")
+# Debug
+readok = inifile.get_ini("Debug", "readok", False) 
+debug = inifile.get_ini("Debug", "debug", False) 
+
+# Filesystem
+filepath = inifile.get_ini("Filesystem", "filepath", "/var/www")
+filenamePrefix = inifile.get_ini("Filesystem", "filenamePrefix", "PIR")
+diskSpaceToReserve = int(inifile.get_ini("Filesystem", "diskSpaceToReserve", 1048576)) # 1024 * 1024 * 1024 - Keep 1024 mb free on disk
+
+# Light
+# True / False - Ir light in use
+bIrLight = inifile.get_ini("Light", "IrLight", False)  
+
+# Camera
+# True / False - Camera led
+bLedOn = inifile.get_ini("Camera", "LedOn", False)
+# auto,night,nightpreview,backlight,spotlight,sports,snow,beach,verylong,fixedfps,antishake,fireworks
+camera_exposure_mode = inifile.get_ini("Camera", "camera_exposure_mode",'auto')
+camera_exposure_compensation = int(inifile.get_ini("Camera", "camera_exposure_compensation", "2"))
+camera_meter_mode = inifile.get_ini("Camera", "camera_meter_mode",'matrix')
+camera_hflip = inifile.get_ini("Camera", "camera_hflip", False) # Flip camera image horisontally
+camera_vflip = inifile.get_ini("Camera", "camera_vflip", False) # Flip camera image vertically
+camera_image_effect = inifile.get_ini("Camera", "camera_image_effect",'none')
+camera_exif_tags_IFD0_Copyright = inifile.get_ini("Camera", "camera_exif_tags_IFD0_Copyright",'Copyright (c) 2015 TJuTZu')
+camera_exif_tags_EXIF_UserComment = inifile.get_ini("Camera", "camera_exif_tags_EXIF_UserComment",'Raspberry Pi - PRICam.py Motion detection')
+#camera_resolution_w = ''
+#camera_resolution_h = ''
+
+# -------------------------------------------------------------------------------------------------
+# Logging
+# -------------------------------------------------------------------------------------------------
+
+# for debug
+logfile = filepath + "/" + filenamePrefix + DateText() + ".log"
+
+logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', filename=logfile,level=logging.DEBUG)
+logging.debug ("Logs to: %s" % logfile)
+
+logging.debug ("Inifile: " + os.path.dirname(os.path.realpath(__file__)) + "/raspberry-pi-pircam-xlight.ini")
+logging.debug ("readok: %s" % readok)
+logging.debug ("debug: %s" % debug)
+logging.debug ("filepath: %s" % filepath)
+logging.debug ("filenamePrefix: %s" % filenamePrefix)
+logging.debug ("diskSpaceToReserve: %d bytes / %d kb / %d Mb / %d Gb" % (diskSpaceToReserve, diskSpaceToReserve/1024, diskSpaceToReserve/1024/1024, diskSpaceToReserve/1024/1024/1024)) 
+logging.debug ("bIrLight: %s" % bIrLight)
+logging.debug ("bLedOn: %s" % bLedOn)    
+logging.debug ("camera_exposure_mode: %s" % camera_exposure_mode)
+logging.debug ("camera_exposure_compensation: %d" % int(camera_exposure_compensation))
+logging.debug ("camera_meter_mode: %s" % camera_meter_mode)
+logging.debug ("camera_hflip: %s" % camera_hflip)
+logging.debug ("camera_vflip: %s" % camera_vflip)
+logging.debug ("camera_image_effect: %s" % camera_image_effect)
+logging.debug ("camera_exif_tags_IFD0_Copyright: %s" % camera_exif_tags_IFD0_Copyright)
+logging.debug ("camera_exif_tags_EXIF_UserComment %s" % camera_exif_tags_EXIF_UserComment)
+
+
 # -------------------------------------------------------------------------------------------------
 # Main loop
 # -------------------------------------------------------------------------------------------------
 
 with picamera.PiCamera() as camera:
 
-    # for debug
-    logfile = filepath + "/PIR" + DateText() + ".log"
-    logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S', filename=logfile,level=logging.DEBUG)
-    logging.debug ("Logs to: %s" % logfile)
+    # Camera is not currently recording
+    RecordingOn   = False
+
     
     camera.led = False
-    #camera.resolution = (1920, 1080)
-    #camera.resolution = (1280, 720)
-    camera.exposure_compensation = 2
-    camera.exposure_mode = 'auto' # auto sports
-    camera.meter_mode = 'matrix'
-    camera.hflip = True # camera is upside down
-    camera.vflip = True # camera is upside down
-    camera.image_effect = 'none'
-    camera.exif_tags['IFD0.Copyright'] = 'Copyright (c) 2014 PAJAT'
-    camera.exif_tags['EXIF.UserComment'] = 'Raspberry Pi - PRICam.py Motion detection'
+    camera.exposure_compensation = camera_exposure_compensation
+    camera.exposure_mode = camera_exposure_mode
+    camera.meter_mode = camera_meter_mode
+    camera.hflip = camera_hflip
+    camera.vflip = camera_vflip
+    camera.image_effect = camera_image_effect
+    camera.exif_tags['IFD0.Copyright'] = camera_exif_tags_IFD0_Copyright
+    camera.exif_tags['EXIF.UserComment'] = camera_exif_tags_EXIF_UserComment
     
     logging.debug ("Capturing mode video")
     
@@ -275,5 +327,8 @@ with picamera.PiCamera() as camera:
 
     # Cleanup if stopped by using Ctrl-C
     except KeyboardInterrupt:
+        if RecordingOn == True:
+            StopVideoRecording(camera)
+            conver_to_mp4(filename)
         logging.debug("Cleanup")
         GPIO.cleanup()
