@@ -230,9 +230,6 @@ logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S
 logging.debug ("Logs to: %s" % logfile)
 
 logging.debug ("Inifile: " + os.path.dirname(os.path.realpath(__file__)) + "/raspberry-pi-pircam-xlight.ini")
-logging.debug ("readok: %s" % readok)
-logging.debug ("readok: %s" % (readok is "True"))
-logging.debug ("readok: %s" % (readok == "True"))
 logging.debug ("readok: %s" % (readok == True))
 logging.debug ("debug: %s" % debug)
 logging.debug ("filepath: %s" % filepath)
