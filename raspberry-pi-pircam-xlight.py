@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------------------------
 #
-# raspberry-pi-pircam.py ver 1.7
+# raspberry-pi-pircam.py ver 1.7.1
 #
 # Raspberry Pi motion detection IR Camera with extra IR Led
 # by TJuTZu
@@ -17,6 +17,10 @@
 # 1.7
 # - Some reorganizing the code
 # - Configuration moved to ini file
+# 1.7.1
+# - Edded event handling to detect when sensor is triggered, used to detect how PIR works
+# - Noted that PIR was set to single trigger mode and that was causing all the recordings
+#   to be exatly same length
 # -------------------------------------------------------------------------------------------------
 
 # Time handling
@@ -184,6 +188,17 @@ def conver_to_mp4(target_filename):
     os.remove(target_filename + ".h264")
    
 # -------------------------------------------------------------------------------------------------
+# Event for testing PIR
+# -------------------------------------------------------------------------------------------------
+
+def GPIO_04_Event(channel):
+    if GPIO.input(4):
+        logging.debug ("Event: RISING!")
+    else:
+        logging.debug ("Event: FALLING!")
+
+
+# -------------------------------------------------------------------------------------------------
 # Setup
 # -------------------------------------------------------------------------------------------------
 
@@ -219,6 +234,9 @@ camera_exif_tags_EXIF_UserComment = inifile.get_ini("Camera", "camera_exif_tags_
 #camera_resolution_w = ''
 #camera_resolution_h = ''
 
+GPIO.add_event_detect(4, GPIO.BOTH, callback=GPIO_04_Event)
+
+
 # -------------------------------------------------------------------------------------------------
 # Logging
 # -------------------------------------------------------------------------------------------------
@@ -246,7 +264,6 @@ logging.debug ("camera_image_effect: %s" % camera_image_effect)
 logging.debug ("camera_exif_tags_IFD0_Copyright: %s" % camera_exif_tags_IFD0_Copyright)
 logging.debug ("camera_exif_tags_EXIF_UserComment %s" % camera_exif_tags_EXIF_UserComment)
 
-
 # -------------------------------------------------------------------------------------------------
 # Main loop
 # -------------------------------------------------------------------------------------------------
@@ -256,7 +273,6 @@ with picamera.PiCamera() as camera:
     # Camera is not currently recording
     RecordingOn   = False
 
-    
     camera.led = False
     camera.exposure_compensation = camera_exposure_compensation
     camera.exposure_mode = camera_exposure_mode
