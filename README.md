@@ -1,8 +1,6 @@
 # raspberry-pi-pircam
-===================
 
 ## Raspberry Pi motion detection IR Camera with IR lights by TJuTZu
-----------------------------------------------------------------
 
 Version 1.7.1
 
