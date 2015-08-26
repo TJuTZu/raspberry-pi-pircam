@@ -66,11 +66,12 @@ Copy encode-explorer into /var/www/cam directory
 Get [Encode Explorer] (http://encode-explorer.siineiolekala.net/) directly from git, remove index.html which is no longer needed
 
 ```
-cd /var/www
-sudo wget https://github.com/marekrei/encode-explorer/blob/master/index.php
-sudo rm index.html
+wget https://github.com/marekrei/encode-explorer/archive/master.zip
+unzip master
+sudo cp encode-explorer-master/index.php /var/www/
+sudo rm /var/www/index.html
 ```
 modify it according to instructions given on Encode Explorer pages
 ```
-sudo nano  index.php
+sudo nano /var/www/index.php
 ```
