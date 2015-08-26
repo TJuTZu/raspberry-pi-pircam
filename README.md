@@ -43,11 +43,8 @@ To be able to see recorded files trough web apache is needed Install apache:
 ```
 sudo apt-get install apache2 -y
 ```
-Currently application saves recorded files by default in /var/www/cam folder which need to be created.
+Currently application saves recorded files by default in /var/www which is created during apache install.
 
-```
-mkdir /var/www/cam
-```
 Good file explorer to use with web server is [Encode Explorer] (http://encode-explorer.siineiolekala.net/) it needs PHP be installed.
 
 Install PHP:
@@ -55,8 +52,25 @@ Install PHP:
 sudo apt-get install php5 libapache2-mod-php5 -y
 ```
 
+Install PHP image prosessing:
+```
+sudo apt-get install php5-gd -y
+```
+
 Restart apache
 ```
 sudo service apache2 restart
 ```
 Copy encode-explorer into /var/www/cam directory
+
+Get [Encode Explorer] (http://encode-explorer.siineiolekala.net/) directly from git, remove index.html which is no longer needed
+
+```
+cd /var/www
+sudo wget https://github.com/marekrei/encode-explorer/blob/master/index.php
+sudo rm index.html
+```
+modify it according to instructions given on Encode Explorer pages
+```
+sudo nano  index.php
+```
