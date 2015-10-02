@@ -23,6 +23,7 @@ Still work in progress
 ### Note!
 
 Currently this git doesn't contain the description of electronics needed to run 12V IR light.
+Schematic can be found from my [web page] (http://tjutzu.kapsi.fi/wp/raspberry-pi-pircam-2/)
 Recordings are stored in /var/www on default configuration, change it if web server is not used
 
 ### Installation
