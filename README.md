@@ -20,10 +20,13 @@ Still work in progress
 * HC-SR501 Adjust Pyroelectric Infrared IR PIR Motion Sensor Detector
 * 48 LED illuminator IR Infrared Night Vision
 
-### Note!
+### Schema
 
 Currently this git doesn't contain the description of electronics needed to run 12V IR light.
-Schematic can be found from my [web page] (http://tjutzu.kapsi.fi/wp/raspberry-pi-pircam-2/)
+Schematic can be found from my [web page] (http://tjutzu.kapsi.fi/wp/raspberry-pi-pircam-2/).
+
+### Note!
+
 Recordings are stored in /var/www on default configuration, change it if web server is not used
 
 ### Installation
