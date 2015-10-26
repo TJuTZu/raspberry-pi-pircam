@@ -164,6 +164,7 @@ def StartVideoRecording(camera, target_filename):
     # take picture
     if bVidPic:
       target_filename = target_filename + ".jpg"
+      logging.debug ("Taking Video Picture %s" % target_filename)
       camera.capture(target_filename, use_video_port=True)
        
     if bLedOn: camera.led = False
@@ -229,7 +230,7 @@ bIrLight = "True" == inifile.get_ini("Light", "IrLight", False)
 # Camera
 # True / False - Camera led
 bLedOn = "True" == inifile.get_ini("Camera", "LedOn", False)
-bVidPic = "True" == inifile.get_ini("Camera", "VidPic", False)
+bVidPic = "True" == inifile.get_ini("Camera", "VideoPicture", False)
 # auto,night,nightpreview,backlight,spotlight,sports,snow,beach,verylong,fixedfps,antishake,fireworks
 camera_exposure_mode = inifile.get_ini("Camera", "camera_exposure_mode",'auto')
 camera_exposure_compensation = int(inifile.get_ini("Camera", "camera_exposure_compensation", "2"))
