@@ -21,6 +21,8 @@
 # - Edded event handling to detect when sensor is triggered, used to detect how PIR works
 # - Noted that PIR was set to single trigger mode and that was causing all the recordings
 #   to be exatly same length
+# 1.7.2
+# - Also picture is taken when video recording starts
 # -------------------------------------------------------------------------------------------------
 
 # Time handling
@@ -158,6 +160,11 @@ def StartVideoRecording(camera, target_filename):
     logging.debug ("Start recording %s" % target_filename)
     camera.start_recording(target_filename, format='h264')
     logging.debug ("Started recording")
+    
+    # take picture
+    if bVidPic:
+      target_filename = target_filename + ".jpg"
+      camera.capture(target_filename, use_video_port=True)
        
     if bLedOn: camera.led = False
 
@@ -222,6 +229,7 @@ bIrLight = "True" == inifile.get_ini("Light", "IrLight", False)
 # Camera
 # True / False - Camera led
 bLedOn = "True" == inifile.get_ini("Camera", "LedOn", False)
+bVidPic = "True" == inifile.get_ini("Camera", "VidPic", True)
 # auto,night,nightpreview,backlight,spotlight,sports,snow,beach,verylong,fixedfps,antishake,fireworks
 camera_exposure_mode = inifile.get_ini("Camera", "camera_exposure_mode",'auto')
 camera_exposure_compensation = int(inifile.get_ini("Camera", "camera_exposure_compensation", "2"))
@@ -255,6 +263,7 @@ logging.debug ("filenamePrefix: %s" % filenamePrefix)
 logging.debug ("diskSpaceToReserve: %d bytes / %d kb / %d Mb / %d Gb" % (diskSpaceToReserve, diskSpaceToReserve/1024, diskSpaceToReserve/1024/1024, diskSpaceToReserve/1024/1024/1024)) 
 logging.debug ("bIrLight: %s" % bIrLight)
 logging.debug ("bLedOn: %s" % bLedOn)    
+logging.debug ("bVidPic: %s" % bVidPic)    
 logging.debug ("camera_exposure_mode: %s" % camera_exposure_mode)
 logging.debug ("camera_exposure_compensation: %d" % int(camera_exposure_compensation))
 logging.debug ("camera_meter_mode: %s" % camera_meter_mode)
