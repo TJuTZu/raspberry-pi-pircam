@@ -229,7 +229,7 @@ bIrLight = "True" == inifile.get_ini("Light", "IrLight", False)
 # Camera
 # True / False - Camera led
 bLedOn = "True" == inifile.get_ini("Camera", "LedOn", False)
-bVidPic = "True" == inifile.get_ini("Camera", "VidPic", True)
+bVidPic = "True" == inifile.get_ini("Camera", "VidPic", False)
 # auto,night,nightpreview,backlight,spotlight,sports,snow,beach,verylong,fixedfps,antishake,fireworks
 camera_exposure_mode = inifile.get_ini("Camera", "camera_exposure_mode",'auto')
 camera_exposure_compensation = int(inifile.get_ini("Camera", "camera_exposure_compensation", "2"))
