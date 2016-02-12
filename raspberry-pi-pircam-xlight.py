@@ -309,6 +309,9 @@ with picamera.PiCamera() as camera:
                 logging.debug ("Movement detected!")
                 # Check that enough free space is available 
                 keepDiskSpaceFree(diskSpaceToReserve)
+                # Set annotate_text
+                annotate_text = "%04d.%02d.%02d %02d:%02d:%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+                camera.annotate_text = annotate_text
                 # Not recording yet
                 if RecordingOn == False:    
                     logging.debug ("Not Recording")
@@ -319,8 +322,6 @@ with picamera.PiCamera() as camera:
                     # set recording on
                     RecordingOn = True
                 else:
-                    annotate_text = "%04d.%02d.%02d %02d:%02d:%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
-                    camera.annotate_text = annotate_text  
                     logging.debug ("Recording: %s" % annotate_text)
                     camera.wait_recording(1)
             # movement stopped
