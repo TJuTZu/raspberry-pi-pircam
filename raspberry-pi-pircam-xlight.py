@@ -178,6 +178,7 @@ def StartVideoRecording(camera, target_filename):
 def StopVideoRecording(camera):
     logging.debug ("StopVideoRecording")
     camera.stop_recording()
+    camera._check_recording_stopped()
     IRLight(False)
     if bLedOn: camera.led = False
 
