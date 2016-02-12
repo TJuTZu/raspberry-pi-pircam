@@ -358,3 +358,6 @@ with picamera.PiCamera() as camera:
             conver_to_mp4(filename)
         logging.debug("Cleanup")
         GPIO.cleanup()
+
+    except Exception as e:
+      logging.debug ("Error %s" % str(e))
