@@ -2,7 +2,7 @@
 
 ## Raspberry Pi motion detection IR Camera with IR lights by TJuTZu
 
-Version 1.7.1
+Version 1.7.3
 
 raspberry-pi-pircam-xlight.py is for controlling Raspberry Pi camera module
 with PIR motion detector with external IR Lights
