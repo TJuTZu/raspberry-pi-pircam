@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------------------------
 #
-# raspberry-pi-pircam.py ver 1.7.1
+# raspberry-pi-pircam.py ver 1.7.3
 #
 # Raspberry Pi motion detection IR Camera with extra IR Led
 # by TJuTZu
@@ -23,6 +23,8 @@
 #   to be exatly same length
 # 1.7.2
 # - Also picture is taken when video recording starts
+# 1.7.3
+# - IR light usage while taking pictures depend on ini value
 # -------------------------------------------------------------------------------------------------
 
 # Time handling
@@ -227,6 +229,8 @@ diskSpaceToReserve = int(inifile.get_ini("Filesystem", "diskSpaceToReserve", 104
 # Light
 # True / False - Ir light in use
 bIrLight = "True" == inifile.get_ini("Light", "IrLight", False)  
+bIrLightPic = "True" == inifile.get_ini("Light", "IrLightPic", False)  
+
 
 # Camera
 # True / False - Camera led
@@ -264,6 +268,7 @@ logging.debug ("filepath: %s" % filepath)
 logging.debug ("filenamePrefix: %s" % filenamePrefix)
 logging.debug ("diskSpaceToReserve: %d bytes / %d kb / %d Mb / %d Gb" % (diskSpaceToReserve, diskSpaceToReserve/1024, diskSpaceToReserve/1024/1024, diskSpaceToReserve/1024/1024/1024)) 
 logging.debug ("bIrLight: %s" % bIrLight)
+logging.debug ("bIrLightPic: %s" % bIrLightPic)
 logging.debug ("bLedOn: %s" % bLedOn)    
 logging.debug ("bVidPic: %s" % bVidPic)    
 logging.debug ("camera_exposure_mode: %s" % camera_exposure_mode)
@@ -346,11 +351,11 @@ with picamera.PiCamera() as camera:
                         filename = filepath + "/" + filenamePrefix + "-%04d%02d%02d-%02d%02d%02d" % (dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second) + ".jpg"
                         logging.debug ("Capture %s" % filename)
                         # IR Ligth on
-                        IRLight(True)
+                        if bIrLightPic: IRLight(True)
                         # take picture
                         camera.capture(filename)
                         # IR Ligth off
-                        IRLight(False)
+                        if bIrLightPic: IRLight(False)
                         time.sleep(1)
 
     # Cleanup if stopped by using Ctrl-C
